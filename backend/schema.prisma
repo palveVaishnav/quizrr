@@ -1,0 +1,40 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator db {
+    provider = "go run github.com/steebchen/prisma-client-go"
+}
+
+model Question {
+    id         String    @id @default(cuid())
+    question   String
+    options    Json
+    viewed     Boolean   @default(false)
+    review     Boolean   @default(false)
+    answer     Int
+    Sections   Sections? @relation(fields: [sectionsId], references: [id])
+    sectionsId String?
+}
+
+model Sections {
+    id        String     @id @default(cuid())
+    title     String
+    maxMarks  Int
+    questions Question[]
+    Test      Test?      @relation(fields: [testId], references: [id])
+    testId    String?
+}
+
+model Test {
+    id         String     @id @default(cuid())
+    name       String
+    // wiil keep this in minutes 
+    time       Int
+    locked     Boolean    @default(true)
+    date       DateTime   @default(now())
+    nquestions Int
+    marks      Int
+    sections   Sections[]
+}

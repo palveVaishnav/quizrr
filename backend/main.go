@@ -1,34 +1,71 @@
-package main 
+package main
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/jmoiron/sqlx"
-	"log"
-	"os"
+	"context"
+	"encoding/json"
+	"fmt"
+	// Client
+	"backend/db"
+	"github.com/steebchen/prisma-client-go/runtime/types"
 )
 
-func main(){
-	app := fiber.New()
-	
-	var err error
-	// Replace with your own database connection string
-	dsn := os.Getenv("DATABASE_URL") 
-	// Open a new database connection using sqlx
-	DB, err = sqlx.Connect("postgres", dsn)
-
-	if err != nil {
-		log.Fatalf("Could not connect to the database: %v", err)
+func main() {
+	if err := run(); err != nil {
+		panic(err)
 	}
-
-	log.Println("Successfully connected to the database")
-
-	// app.Get("/",func(c *fiber.Ctx) error{
-	// 	return c.JSON(DummyQuestion)
-	// })
-
-	// app.Listen(":3000")
 }
 
+func run() error {
+	client := db.NewClient()
+	if err := client.Prisma.Connect(); err != nil {
+		return err
+	}
 
+	defer func() {
+		if err := client.Prisma.Disconnect(); err != nil {
+			panic(err)
+		}
+	}()
 
+	ctx := context.Background()
 
+	// Prepare the options array and convert to types.JSON
+	options := []string{"Option 1", "Option 2", "Option 3", "Option 4"}
+	optionsJSON, err := json.Marshal(options)
+	if err != nil {
+		return fmt.Errorf("could not marshal options: %w", err)
+	}
+
+	// Convert the marshaled options into types.JSON
+	optionsType := types.JSON(optionsJSON)
+
+	// create a Question and adding to db
+	createdQuestion, err := client.Question.CreateOne(
+		db.Question.Question.Set("New Question"),
+		db.Question.Options.Set(optionsType),
+		db.Question.Viewed.Set(false),
+		db.Question.Review.Set(false),
+		db.Question.Answer.Set(1),
+	).Exec(ctx)
+	if err != nil {
+		return err
+	}
+
+	// the db response for createOne
+	result, _ := json.MarshalIndent(createdQuestion, "", "  ")
+	fmt.Printf("created Question: %s\n", result)
+
+	//  Searching / verify what is created
+	question, err := client.Question.FindUnique(
+		db.Question.ID.Equals(createdQuestion.ID),
+	).Exec(ctx)
+	if err != nil {
+		return err
+	}
+
+	// convert to json for fe
+	result, _ = json.MarshalIndent(question, "", "  ")
+	fmt.Printf("Question : %s\n", result)
+
+	return nil
+}
