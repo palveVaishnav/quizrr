@@ -4,18 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	// Client
+	"log"
+
+	"github.com/gofiber/fiber/v2"
 	"backend/db"
-	"github.com/steebchen/prisma-client-go/runtime/types"
 )
 
 func main() {
 	if err := run(); err != nil {
-		panic(err)
+		log.Fatalf("Failed to run: %v", err)
 	}
 }
 
 func run() error {
+	// Initialize Prisma client
 	client := db.NewClient()
 	if err := client.Prisma.Connect(); err != nil {
 		return err
@@ -23,49 +25,58 @@ func run() error {
 
 	defer func() {
 		if err := client.Prisma.Disconnect(); err != nil {
-			panic(err)
+			log.Fatalf("Failed to disconnect: %v", err)
 		}
 	}()
 
 	ctx := context.Background()
 
-	// Prepare the options array and convert to types.JSON
-	options := []string{"Option 1", "Option 2", "Option 3", "Option 4"}
-	optionsJSON, err := json.Marshal(options)
-	if err != nil {
-		return fmt.Errorf("could not marshal options: %w", err)
+	// Initialize a new Fiber app
+	app := fiber.New()
+
+	// Define a route to get all tests
+	app.Get("/api/tests", func(c *fiber.Ctx) error {
+		// Fetch all tests along with sections and questions using With()
+		tests, err := client.Test.FindMany().With(
+			db.Test.Sections.Fetch(),
+		).Exec(ctx)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch tests"})
+		}
+
+		// Convert the tests to JSON format
+		result, err := json.MarshalIndent(tests, "", "  ")
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to marshal test data"})
+		}
+
+		return c.Send(result)
+	})
+
+	app.Get("/api/test/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+		test , err := client.Test.FindUnique(
+			db.Test.ID.Equals(id),
+		).With(
+			db.Test.Sections.Fetch().With(
+				db.Sections.Questions.Fetch(),
+			),
+		).Exec(ctx)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error" : "Faind to get test"})
+		}
+		response , err := json.MarshalIndent(test,""," ")
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error":"parsing failed"})
+		}
+
+		return c.Send(response)
+	})
+
+	// Start the Fiber app on port 8080
+	if err := app.Listen(":8080"); err != nil {
+		return fmt.Errorf("failed to run server: %w", err)
 	}
-
-	// Convert the marshaled options into types.JSON
-	optionsType := types.JSON(optionsJSON)
-
-	// create a Question and adding to db
-	createdQuestion, err := client.Question.CreateOne(
-		db.Question.Question.Set("New Question"),
-		db.Question.Options.Set(optionsType),
-		db.Question.Viewed.Set(false),
-		db.Question.Review.Set(false),
-		db.Question.Answer.Set(1),
-	).Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	// the db response for createOne
-	result, _ := json.MarshalIndent(createdQuestion, "", "  ")
-	fmt.Printf("created Question: %s\n", result)
-
-	//  Searching / verify what is created
-	question, err := client.Question.FindUnique(
-		db.Question.ID.Equals(createdQuestion.ID),
-	).Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	// convert to json for fe
-	result, _ = json.MarshalIndent(question, "", "  ")
-	fmt.Printf("Question : %s\n", result)
 
 	return nil
 }

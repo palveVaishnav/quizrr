@@ -10,7 +10,7 @@ import (
 	"github.com/steebchen/prisma-client-go/runtime/types"
 )
 
-func main() {
+func seedmain() {
 	if err := seed(); err != nil {
 		log.Fatalf("Error seeding data: %v", err)
 	}
