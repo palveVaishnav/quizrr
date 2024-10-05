@@ -5,13 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-
+	"os"
 	"backend/db"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"backend/seed"
 )
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "seed" {
+		fmt.Println("Running database seeding...")
+		seed.SeedDatabase()
+		fmt.Println("Seeding completed.")
+		return
+	}
 	if err := run(); err != nil {
 		log.Fatalf("Failed to run: %v", err)
 	}
@@ -78,10 +85,17 @@ func run() error {
 		return c.Send(response)
 	})
 
+
+	app.Post("/api/attempt", func(c *fiber.Ctx) error {
+		Body := c.Body()
+		fmt.Printf("Received:\n%s\n", string(Body)) // Fixed formatting
+		response := fiber.Map{"status": "ok"} // JSON response
+		return c.JSON(response) // Return JSON response
+	})
+
 	// Start the Fiber app on port 8080
 	if err := app.Listen(":8080"); err != nil {
 		return fmt.Errorf("failed to run server: %w", err)
 	}
-
 	return nil
 }
