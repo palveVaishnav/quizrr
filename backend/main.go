@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gofiber/fiber/v2"
 	"backend/db"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
@@ -34,6 +35,10 @@ func run() error {
 	// Initialize a new Fiber app
 	app := fiber.New()
 
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:5173", // Replace with your frontend URL
+	}))
+
 	// Define a route to get all tests
 	app.Get("/api/tests", func(c *fiber.Ctx) error {
 		// Fetch all tests along with sections and questions using With()
@@ -55,7 +60,7 @@ func run() error {
 
 	app.Get("/api/test/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
-		test , err := client.Test.FindUnique(
+		test, err := client.Test.FindUnique(
 			db.Test.ID.Equals(id),
 		).With(
 			db.Test.Sections.Fetch().With(
@@ -63,11 +68,11 @@ func run() error {
 			),
 		).Exec(ctx)
 		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error" : "Faind to get test"})
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Faind to get test"})
 		}
-		response , err := json.MarshalIndent(test,""," ")
+		response, err := json.MarshalIndent(test, "", " ")
 		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error":"parsing failed"})
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "parsing failed"})
 		}
 
 		return c.Send(response)
