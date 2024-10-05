@@ -1,16 +1,17 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, Clock, FileText, LockIcon, Target } from "lucide-react"
+import { Calendar, Clock, FileText, Target } from "lucide-react"
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
+import { Test } from "@/types";
 
 export default function TestOverview() {
     // State to store the test data
-    const [test, setTest] = useState(null);
+    const [test, setTest] = useState<Test>();
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    // Fetch data when the component mounts
+    const [error, setError] = useState("");
+
     const [searchParams] = useSearchParams();
     const id = searchParams.get('id');
 
@@ -27,7 +28,7 @@ export default function TestOverview() {
                     throw new Error(`Error: ${response.statusText}`);
                 }
 
-                const jsonData = await response.json(); // Use response.json() instead of text()
+                const jsonData: Test = await response.json(); // Use response.json() instead of text()
                 console.log("Response JSON:", jsonData);
                 setTest(jsonData);
             } catch (err) {

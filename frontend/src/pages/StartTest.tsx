@@ -1,29 +1,66 @@
-"use client"
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { ChevronDown, Info, ChevronRight, Check } from 'lucide-react';
-import { Question, Section, Test } from '@/types';
+import { Check, ChevronDown, ChevronRight, Info } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
-export default function TestOverview() {
-    // State to store the test data
-    const [test, setTest] = useState<Test | null>(null); // Use the `Test` type for `test` state
+interface Question {
+    id: string;
+    question: string;
+    options: string[]; // Change this type to string array
+    viewed: boolean;
+    review: boolean;
+    answer: number;
+    sectionsId: string;
+}
+
+interface Section {
+    id: string;
+    title: string;
+    maxMarks: number;
+    testId: string;
+    questions: Question[];
+}
+
+interface Test {
+    id: string;
+    name: string;
+    time: number;
+    locked: boolean;
+    date: string;
+    nquestions: number;
+    marks: number;
+    sections: Section[];
+}
+
+const Question: React.FC<{ question: Question; onAnswerChange: (index: number) => void }> = ({ question, onAnswerChange }) => {
+    return (
+        <div style={{ marginBottom: '1em' }}>
+            <p><strong>Q: {question.question}</strong></p>
+            {question.options.map((option, index) => (
+                <div key={index}>
+                    <label>
+                        <input
+                            type="radio"
+                            name={`question-${question.id}`}
+                            checked={question.answer === index}
+                            onChange={() => onAnswerChange(index)}
+                        />
+                        {option}
+                    </label>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+export const TestComponent = ({ id }: { id: string }) => {
+    const [test, setTest] = useState<Test | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null); // Error state should be of type `string | null`
-
-    const [searchParams] = useSearchParams();
-    const id = searchParams.get('id');
-
-    // State variables for test parameters
-    const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    // interaction handling
     const [currentQuestion, setCurrentQuestion] = useState(1);
+    const [currentSection, setCurrentSection] = useState(0);
+    const [submitting, setSubmitting] = useState(false);
 
-    // types 
-    const [activeSection, setActiveSection] = useState<Section | null>(null);
-    const [activeQuestion, setActiveQuestion] = useState<Question | null>(null);
-    const [timeLeft, setTimeLeft] = useState("179:56");
-
-    const answers = ["9.8 N", "4.9 N", "19.6 N", "8 N"];
-
+    // Fetch test data and store it in state
     useEffect(() => {
         async function fetchTest() {
             try {
@@ -31,16 +68,28 @@ export default function TestOverview() {
                 console.log("Fetching data from:", backendUrl);
 
                 const response = await fetch(backendUrl);
-                console.log("Raw response:", response);
-
                 if (!response.ok) {
                     throw new Error(`Error: ${response.statusText}`);
                 }
 
-                const jsonData: Test = await response.json(); // Parse the response as a `Test` object
+                const jsonData: Test = await response.json();
                 console.log("Response JSON:", jsonData);
-                setTest(jsonData);
-            } catch (err: any) { // Handle error with a more specific type
+
+                // Parse `options` field in each question
+                const parsedData = {
+                    ...jsonData,
+                    sections: jsonData.sections.map((section) => ({
+                        ...section,
+                        questions: section.questions.map((question) => ({
+                            ...question,
+                            answer: -1,
+                            options: JSON.parse(question.options || '[]'), // Parse options field to make it an actual JSON array
+                        })),
+                    })),
+                };
+
+                setTest(parsedData); // Store the parsed test data
+            } catch (err: any) {
                 setError(err.message);
             } finally {
                 setLoading(false);
@@ -53,16 +102,86 @@ export default function TestOverview() {
             setError("No test ID provided");
             setLoading(false);
         }
-    }, [id]); // Dependency array includes `id`
+    }, [id]);
 
-    // Show loading message while data is being fetched
-    if (loading) return <div>Loading...</div>;
+    // Function to handle question updates
+    const handleUpdateQuestion = (
+        sectionId: string,
+        questionId: string,
+        updatedQuestion: Partial<Question>
+    ) => {
+        if (!test) return;
 
-    // Show error message if there's an error
-    if (error) return <div>Error: {error}</div>;
+        // Find and update the question within the sections
+        const updatedSections = test.sections.map((section) => {
+            if (section.id !== sectionId) return section;
 
+            return {
+                ...section,
+                questions: section.questions.map((question) =>
+                    question.id === questionId
+                        ? { ...question, ...updatedQuestion }
+                        : question
+                ),
+            };
+        });
 
-    // Show test details
+        setTest({ ...test, sections: updatedSections }); // Update the state
+    };
+
+    // Function to handle form submission
+    const handleSubmit = async () => {
+        if (!test) {
+            console.error("No test data to submit");
+            return;
+        }
+
+        setSubmitting(true); // Set submitting state to true
+        try {
+            const submitUrl = `http://127.0.0.1:8080/api/attempt`;
+            console.log("Submitting updated test to:", submitUrl);
+
+            const response = await fetch(submitUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...test,
+                    sections: test.sections.map((section) => ({
+                        ...section,
+                        questions: section.questions.map((question) => ({
+                            ...question,
+                            options: JSON.stringify(question.options), // Re-stringify options before sending
+                        })),
+                    })),
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to submit test: ${response.statusText}`);
+            }
+
+            console.log("Test submitted successfully!");
+            alert("Test submitted successfully!");
+        } catch (error) {
+            console.error("Error submitting test:", error);
+            alert("Error submitting test: " + error.message);
+        } finally {
+            setSubmitting(false); // Reset submitting state
+        }
+    };
+
+    // Function to handle section switch
+    const handleSectionSwitch = (index: number) => {
+        setCurrentSection(index);
+        setCurrentQuestion(1); // Reset question number when switching sections
+    };
+
+    // Render loading, error, or test data
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error}</p>;
+
     return (
         <div className="flex flex-col text-left h-screen p-0">
             {test && (
@@ -81,7 +200,7 @@ export default function TestOverview() {
                         </div>
                         <p>Time Left:
                             <span className='bg-black py-1 px-2 rounded-xl'>
-                                {timeLeft}
+                                {test.time}
                             </span>
                         </p>
                         <div className="flex items-center space-x-4">
@@ -105,7 +224,10 @@ export default function TestOverview() {
                                 {test.sections && test.sections.length > 0 ? (
                                     test.sections.map((section, idx) => (
                                         <div key={section.id} className='flex justify-stretch'>
-                                            <button className={`border px-4 py-2 flex gap-2 items-center ${idx === 0 && 'bg-blue-400'}`}>
+                                            <button
+                                                className={`border px-4 py-2 flex gap-2 items-center ${idx === currentSection ? 'bg-blue-400' : ''}`}
+                                                onClick={() => handleSectionSwitch(idx)}
+                                            >
                                                 {section.title}
                                                 <Info size={16} className="bg-blue-400 rounded-full text-white" />
                                             </button>
@@ -120,7 +242,7 @@ export default function TestOverview() {
                                 <div className="flex justify-between items-center mb-4 px-6">
                                     <span className="text-gray-500 font-bold flex items-center">
                                         Question No.
-                                        <p className='text-gray-400'>{'1. #66ff182010865b6ae8869a391'}</p>
+                                        <p className='text-gray-400'>{`${test.sections[currentSection].questions[currentQuestion].id}`}</p>
                                     </span>
                                     <div className="flex space-x-2 text-red-500">
                                         <button className="flex items-center">
@@ -135,36 +257,27 @@ export default function TestOverview() {
                                 </div>
 
                                 <div className='p-4 text-center border-b'>
-                                    <h2 className="text-xl font-semibold mb-2">Physics Single Correct (Maximum Marks: 80)</h2>
+                                    <h2 className="text-xl font-semibold mb-2">
+                                        {test.sections[currentSection].title} (Maximum Marks: {test.sections[currentSection].maxMarks})
+                                    </h2>
                                     <h3 className="text-lg mb-4">Only One Option Correct Type</h3>
-                                    <p className="mb-4">This section contains 20 questions. 20 are multiple choice questions. Each question has multiple options out of which ONLY ONE is correct.</p>
+                                    <p className="mb-4">This section contains {test.sections[currentSection].questions.length} questions.</p>
                                 </div>
-                                <div className='p-4'>
-                                    <p className="mb-4">
-                                        The weight of a body at the surface of earth is 18 N. The weight of the body at an altitude of 3200 km above the earth's surface is (given, radius of earth Re = 6400 km)
-                                    </p>
-                                    <div className="space-y-2">
-                                        {answers.map((answer, index) => (
-                                            <label key={index} className="flex items-center space-x-2 cursor-pointer">
-                                                <input
-                                                    type="radio"
-                                                    name="answer"
-                                                    value={index}
-                                                    checked={selectedAnswer === index}
-                                                    onChange={() => setSelectedAnswer(index)}
-                                                    className="form-radio h-5 w-5 text-blue-600"
-                                                />
-                                                <span>{answer}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
+
+                                {/* Display questions */}
+                                {test.sections[currentSection].questions.map((question, index) => (
+                                    index === currentQuestion && (
+                                        <Question
+                                            key={question.id}
+                                            question={question}
+                                            onAnswerChange={(answerIndex) => handleUpdateQuestion(question.sectionsId, question.id, { answer: answerIndex })}
+                                        />
+                                    )
+                                ))}
                             </div>
-
-
                         </div>
 
-                        {/* Right panel */}
+                        {/* Right panel for navigation */}
                         <div className="max-w-80 bg-gray-00 overflow-auto border">
                             <div className="mt-4 space-y-2 grid grid-cols-2 text-sm border-b border-black p-2">
                                 <div className="flex items-center space-x-2">
@@ -209,18 +322,17 @@ export default function TestOverview() {
                             </div>
                             <div>
                                 <h3 className="font-bold mb-2 bg-blue-400 text-white p-2">
-                                    {'PHYSICS SINGLE CORRECT'}
+                                    {test.sections[currentSection].title}
                                 </h3>
 
                                 <div className='p-2'>
                                     <p className="mb-2">Choose a question</p>
                                     <div className="grid grid-cols-5 gap-2">
-                                        {[...Array(20)].map((_, i) => (
+                                        {test.sections[currentSection].questions.map((question, i) => (
                                             <button
                                                 key={i}
-                                                className={`w-10 h-10 rounded ${i + 1 === currentQuestion ? 'bg-red-500 text-white' : 'bg-white'
-                                                    }`}
-                                                onClick={() => setCurrentQuestion(i + 1)}
+                                                className={`w-10 h-10 rounded ${i === currentQuestion ? 'bg-red-500 text-white' : 'bg-white hover:bg-gray-200'}`}
+                                                onClick={() => setCurrentQuestion(i)}
                                             >
                                                 {i + 1}
                                             </button>
@@ -231,7 +343,7 @@ export default function TestOverview() {
                         </div>
                     </div>
 
-                    {/* Footer */}
+                    {/* Submit button */}
                     <footer className="p-2 flex justify-between border">
                         <div className='flex gap-2'>
                             <button className="border text-gray-800 px-10 py-2 ">Mark for Review & Next</button>
@@ -239,7 +351,13 @@ export default function TestOverview() {
                         </div>
                         <div className='flex gap-10 mr-20'>
                             <button className="bg-blue-500 text-white px-10 py-2">Save & Next</button>
-                            <button className="bg-blue-400 px-10 py-2">Submit</button>
+                            <button
+                                onClick={handleSubmit}
+                                disabled={submitting}
+                                className={`bg-blue-500 text-white px-4 py-2 rounded ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                {submitting ? 'Submitting...' : 'Submit Test'}
+                            </button>
                         </div>
                     </footer>
                 </>
@@ -247,4 +365,4 @@ export default function TestOverview() {
             }
         </div >
     );
-}
+};
