@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Link } from 'react-router-dom';
+import { Test } from '@/types';
+import { Clock } from 'lucide-react';
 
 export default function DashboardHome() {
     // State to store the test series data
-    const [tests, setTests] = useState([]);
+    const [tests, setTests] = useState<Test[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     // Fetch data when the component mounts
@@ -58,27 +60,34 @@ export default function DashboardHome() {
                 {/* Render tests dynamically */}
                 {tests.length > 0 ? (
                     tests.map((test, index) => (
-                        <div key={index} className="p-4 border border-gray-300 w-full rounded-xl">
-                            <h2 className="text-md font-semibold">{test.name}</h2>
-                            <p>Total Questions: {test.nquestions}</p>
-                            <p>Total Time (in minutes): {test.time} </p>
-                            <p>Total Marks: {test.marks}</p>
-                            <p>Date: {new Date(test.date).toLocaleDateString()}</p>
+                        <div key={index} className="p-4 border border-gray-300 w-full rounded-xl flex justify-between">
                             <div>
-                                {/* Ensure sections are present before mapping */}
-                                {test.sections && test.sections.length > 0 ? (
-                                    test.sections.map((section) => (
-                                        <div key={section.id}>
-                                            <h3>{section.title}</h3>
-                                            <p>Max Marks: {section.maxMarks}</p>
-                                            <p>Questions: {section.questions?.length || 0}</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p>No sections available</p>
-                                )}
+                                <h2 className="text-md font-semibold">{test.name}</h2>
+                                <div>
+                                    {/* Ensure sections are present before mapping */}
+                                    {test.sections && test.sections.length > 0 ? (
+                                        test.sections.map((section) => (
+                                            <div key={section.id} className='flex gap-2'>
+                                                <h3>{section.title}</h3>
+                                                <p>Marks: {section.maxMarks}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p>No sections available</p>
+                                    )}
+                                </div>
+                                <div className='flex gap-2'>
+                                    <p className='flex'>
+                                        {test.nquestions} questions
+                                    </p>
+                                    <p className='flex'>
+                                        <Clock /> {test.time} minutes
+                                    </p>
+                                    <p> Marks: {test.marks}</p>
+                                    <p>Date: {new Date(test.date).toLocaleDateString()}</p>
+                                </div>
                             </div>
-                            <Link to={`/test/${test.id}`}>
+                            <Link to={`/test/?id=${test.id}`} className='flex items-center'>
                                 <Button>Attempt Now</Button>
                             </Link>
                         </div>
