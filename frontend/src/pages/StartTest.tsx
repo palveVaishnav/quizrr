@@ -1,5 +1,14 @@
 import { Check, ChevronDown, ChevronRight, Info } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Step 1: Import useNavigate
+
+enum Qstatus {
+    notVisited,
+    answered,
+    notAnswered,
+    marked,
+    markedAnswered
+}
 
 interface Question {
     id: string;
@@ -9,7 +18,10 @@ interface Question {
     review: boolean;
     answer: number;
     sectionsId: string;
+    status: Qstatus;
 }
+
+// status : 1. answered, 2. not answered, 3. not
 
 interface Section {
     id: string;
@@ -30,7 +42,8 @@ interface Test {
     sections: Section[];
 }
 
-const Question: React.FC<{ question: Question; onAnswerChange: (index: number) => void }> = ({ question, onAnswerChange }) => {
+// question component
+const QuestionComp: React.FC<{ question: Question; onAnswerChange: (index: number) => void }> = ({ question, onAnswerChange }) => {
     return (
         <div style={{ marginBottom: '1em' }}>
             <p><strong>Q: {question.question}</strong></p>
@@ -56,7 +69,7 @@ export const TestComponent = ({ id }: { id: string }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     // interaction handling
-    const [currentQuestion, setCurrentQuestion] = useState(1);
+    const [currentQuestion, setCurrentQuestion] = useState(0);
     const [currentSection, setCurrentSection] = useState(0);
     const [submitting, setSubmitting] = useState(false);
 
@@ -82,8 +95,9 @@ export const TestComponent = ({ id }: { id: string }) => {
                         ...section,
                         questions: section.questions.map((question) => ({
                             ...question,
-                            answer: -1,
                             options: JSON.parse(question.options || '[]'), // Parse options field to make it an actual JSON array
+                            answer: -1,
+                            status: Qstatus.notVisited,
                         })),
                     })),
                 };
@@ -104,6 +118,32 @@ export const TestComponent = ({ id }: { id: string }) => {
         }
     }, [id]);
 
+    // Function to handle form submission
+    const navigate = useNavigate();
+    const handleSubmit = async () => {
+        if (!test) {
+            console.error("No test data to submit");
+            return;
+        }
+
+        setSubmitting(true); // Set submitting state to true
+
+        try {
+            // Simulating test submission or any other operation
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            // After submission, navigate to another page and pass the test object
+            navigate('/submitpage', { state: { test } }); // Navigate to the '/result' page with test object as state
+
+        } catch (error) {
+            console.error("Error during submission:", error);
+        } finally {
+            setSubmitting(false); // Reset submitting state
+        }
+    };
+
+
+
     // Function to handle question updates
     const handleUpdateQuestion = (
         sectionId: string,
@@ -120,7 +160,10 @@ export const TestComponent = ({ id }: { id: string }) => {
                 ...section,
                 questions: section.questions.map((question) =>
                     question.id === questionId
-                        ? { ...question, ...updatedQuestion }
+                        ? {
+                            ...question,
+                            ...updatedQuestion
+                        }
                         : question
                 ),
             };
@@ -129,58 +172,18 @@ export const TestComponent = ({ id }: { id: string }) => {
         setTest({ ...test, sections: updatedSections }); // Update the state
     };
 
-    // Function to handle form submission
-    const handleSubmit = async () => {
-        if (!test) {
-            console.error("No test data to submit");
-            return;
-        }
-
-        setSubmitting(true); // Set submitting state to true
-        try {
-            const submitUrl = `http://127.0.0.1:8080/api/attempt`;
-            console.log("Submitting updated test to:", submitUrl);
-
-            const response = await fetch(submitUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ...test,
-                    sections: test.sections.map((section) => ({
-                        ...section,
-                        questions: section.questions.map((question) => ({
-                            ...question,
-                            options: JSON.stringify(question.options), // Re-stringify options before sending
-                        })),
-                    })),
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to submit test: ${response.statusText}`);
-            }
-
-            console.log("Test submitted successfully!");
-            alert("Test submitted successfully!");
-        } catch (error) {
-            console.error("Error submitting test:", error);
-            alert("Error submitting test: " + error.message);
-        } finally {
-            setSubmitting(false); // Reset submitting state
-        }
-    };
 
     // Function to handle section switch
     const handleSectionSwitch = (index: number) => {
         setCurrentSection(index);
-        setCurrentQuestion(1); // Reset question number when switching sections
+        setCurrentQuestion(0); // Reset question number when switching sections
     };
 
     // Render loading, error, or test data
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
+
+
 
     return (
         <div className="flex flex-col text-left h-screen p-0">
@@ -240,9 +243,9 @@ export const TestComponent = ({ id }: { id: string }) => {
 
                             <div className="bg-white">
                                 <div className="flex justify-between items-center mb-4 px-6">
-                                    <span className="text-gray-500 font-bold flex items-center">
-                                        Question No.
-                                        <p className='text-gray-400'>{`${test.sections[currentSection].questions[currentQuestion].id}`}</p>
+                                    <span className="text-gray-500 font-bold flex items-center gap-2">
+                                        Question No. {currentQuestion + 1}
+                                        <p className='text-gray-400'>{`#${test.sections[currentSection].questions[currentQuestion].id}`}</p>
                                     </span>
                                     <div className="flex space-x-2 text-red-500">
                                         <button className="flex items-center">
@@ -264,13 +267,13 @@ export const TestComponent = ({ id }: { id: string }) => {
                                     <p className="mb-4">This section contains {test.sections[currentSection].questions.length} questions.</p>
                                 </div>
 
-                                {/* Display questions */}
+                                {/* Display questions and handle updates */}
                                 {test.sections[currentSection].questions.map((question, index) => (
                                     index === currentQuestion && (
-                                        <Question
+                                        <QuestionComp
                                             key={question.id}
                                             question={question}
-                                            onAnswerChange={(answerIndex) => handleUpdateQuestion(question.sectionsId, question.id, { answer: answerIndex })}
+                                            onAnswerChange={(answerIndex) => handleUpdateQuestion(question.sectionsId, question.id, { answer: answerIndex, status: Qstatus.answered })}
                                         />
                                     )
                                 ))}
@@ -331,8 +334,16 @@ export const TestComponent = ({ id }: { id: string }) => {
                                         {test.sections[currentSection].questions.map((question, i) => (
                                             <button
                                                 key={i}
-                                                className={`w-10 h-10 rounded ${i === currentQuestion ? 'bg-red-500 text-white' : 'bg-white hover:bg-gray-200'}`}
-                                                onClick={() => setCurrentQuestion(i)}
+                                                className={`w-10 h-10 border rounded-md     
+                                                    ${question.status === Qstatus.notVisited ? 'border border-blue-500 rounded-md' : ''}
+                                                    ${question.status === Qstatus.answered ? ' bg-green-500' : ''}
+                                                    ${question.status === Qstatus.notAnswered ? ' bg-red-500' : ''}
+                                                    ${question.status === Qstatus.marked ? 'bg-purple-500 rounded-full' : ''}
+                                                    ${question.status === Qstatus.markedAnswered ? 'bg-purple-500 text-white border-green-500' : ''}
+                                                    `}
+                                                onClick={() => {
+                                                    setCurrentQuestion(i)
+                                                }}
                                             >
                                                 {i + 1}
                                             </button>
@@ -346,11 +357,41 @@ export const TestComponent = ({ id }: { id: string }) => {
                     {/* Submit button */}
                     <footer className="p-2 flex justify-between border">
                         <div className='flex gap-2'>
-                            <button className="border text-gray-800 px-10 py-2 ">Mark for Review & Next</button>
-                            <button className="border text-gray-800 px-10 py-2 ">Clear Response</button>
+                            <button className="border text-gray-800 px-10 py-2 "
+                                onClick={() => {
+                                    const ans = test.sections[currentSection].questions[currentQuestion].answer;
+                                    // section id, question id and changes
+                                    handleUpdateQuestion(test.sections[currentSection].id, test.sections[currentSection].questions[currentQuestion].id, { status: ans === -1 ? Qstatus.marked : Qstatus.markedAnswered })
+                                    if (currentQuestion < test.sections[currentSection].questions.length - 1) {
+                                        setCurrentQuestion((prevQuestion) => prevQuestion + 1);
+                                    } else {
+                                        handleSectionSwitch(currentSection + 1)
+                                    }
+                                }}
+                            >
+                                Mark for Review & Next
+                            </button>
+                            <button className="border text-gray-800 px-10 py-2 "
+                                onClick={() =>
+                                    handleUpdateQuestion(test.sections[currentSection].id, test.sections[currentSection].questions[currentQuestion].id, { status: Qstatus.notAnswered, answer: -1 })
+                                }
+                            >
+                                Clear Response
+                            </button>
                         </div>
                         <div className='flex gap-10 mr-20'>
-                            <button className="bg-blue-500 text-white px-10 py-2">Save & Next</button>
+                            <button className="bg-blue-500 text-white px-10 py-2"
+                                onClick={() => {
+                                    const ans = test.sections[currentSection].questions[currentQuestion].answer;
+                                    handleUpdateQuestion(test.sections[currentSection].id, test.sections[currentSection].questions[currentQuestion].id, { status: ans === -1 ? Qstatus.notAnswered : Qstatus.answered, answer: ans })
+                                    if (currentQuestion < test.sections[currentSection].questions.length - 1) {
+                                        setCurrentQuestion((prevQuestion) => prevQuestion + 1);
+                                    } else {
+                                        handleSectionSwitch(currentSection + 1)
+                                    }
+                                }}
+                            >Save & Next
+                            </button>
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting}
