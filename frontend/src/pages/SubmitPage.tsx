@@ -62,7 +62,7 @@ export const ResultPage: React.FC = () => {
 
         setSubmitting(true); // Set submitting state to true
         try {
-            const submitUrl = `http://127.0.0.1:8080/api/attempt`;
+            const submitUrl = `http://127.0.0.1:8080/api/attempt/${test.id}`;
             console.log("Submitting updated test to:", submitUrl);
 
             const response = await fetch(submitUrl, {

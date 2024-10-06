@@ -129,11 +129,7 @@ export const TestComponent = ({ id }: { id: string }) => {
         setSubmitting(true); // Set submitting state to true
 
         try {
-            // Simulating test submission or any other operation
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            // After submission, navigate to another page and pass the test object
-            navigate('/submitpage', { state: { test } }); // Navigate to the '/result' page with test object as state
+            navigate('/submitpage', { state: { test } });
 
         } catch (error) {
             console.error("Error during submission:", error);
@@ -175,7 +171,7 @@ export const TestComponent = ({ id }: { id: string }) => {
 
     // Function to handle section switch
     const handleSectionSwitch = (index: number) => {
-
+        if (!test) return;
         if (index > test?.sections.length - 1) handleSubmit()
 
         setCurrentSection(index);
