@@ -37,4 +37,22 @@ model Test {
     nquestions Int
     marks      Int
     sections   Sections[]
+    Attempt    Attempt[]
+}
+
+model User {
+    id       String  @id @default(cuid())
+    name     String?
+    email    String?
+    password String?
+    // attempts Attempt[]
+}
+
+model Attempt {
+    id     String @id @default(cuid())
+    Test   Test   @relation(fields: [testId], references: [id])
+    testId String
+    marks  Int
+    // User   User?   @relation(fields: [userId], references: [id])
+    // userId String?
 }

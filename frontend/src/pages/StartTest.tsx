@@ -175,6 +175,9 @@ export const TestComponent = ({ id }: { id: string }) => {
 
     // Function to handle section switch
     const handleSectionSwitch = (index: number) => {
+
+        if (index > test?.sections.length - 1) handleSubmit()
+
         setCurrentSection(index);
         setCurrentQuestion(0); // Reset question number when switching sections
     };

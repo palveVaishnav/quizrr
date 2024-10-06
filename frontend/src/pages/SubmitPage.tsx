@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useState } from 'react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -46,11 +46,55 @@ enum Qstatus {
 
 export const ResultPage: React.FC = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { test } = location.state || {}; // Step 2: Extract `test` object from location state
+    const [submitting, setSubmitting] = useState(false);
+
 
     if (!test) {
         return <p>No test data available</p>;
     }
+    const handleSubmit = async () => {
+        if (!test) {
+            console.error("No test data to submit");
+            return;
+        }
+
+        setSubmitting(true); // Set submitting state to true
+        try {
+            const submitUrl = `http://127.0.0.1:8080/api/attempt`;
+            console.log("Submitting updated test to:", submitUrl);
+
+            const response = await fetch(submitUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...test,
+                    sections: test.sections.map((section) => ({
+                        ...section,
+                        questions: section.questions.map((question) => ({
+                            ...question,
+                            options: JSON.stringify(question.options), // Re-stringify options before sending
+                        })),
+                    })),
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to submit test: ${response.statusText}`);
+            }
+
+            console.log("Test submitted successfully!");
+            navigate('/submitsucess');
+        } catch (error) {
+            console.error("Error submitting test:", error);
+            alert("Error submitting test: " + error.message);
+        } finally {
+            setSubmitting(false); // Reset submitting state
+        }
+    };
 
     return (
         <div className="w-full min-h-screen">
@@ -123,10 +167,14 @@ export const ResultPage: React.FC = () => {
                 <p className='col-span-2'>
                     Are you sure about submitting this group of questions for marking
                 </p>
-                <Button className=" bg-gray-500 text-white w-fit place-self-end py-6">
+                <Button className=" bg-gray-500 text-white w-fit place-self-end py-6"
+                    onClick={() => navigate(-1)}
+                >
                     No Go Back To Paper
                 </Button>
-                <Button className="bg-red-500 text-white hover:bg-red-600 w-fit place-self-start py-6">
+                <Button className="bg-red-500 text-white hover:bg-red-600 w-fit place-self-start py-6"
+                    onClick={handleSubmit}
+                >
                     Yes ! Submit the test.
                 </Button>
             </div>
