@@ -3,7 +3,6 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom"
 import { ArrowRight } from 'lucide-react'
 import { Link } from "react-router-dom";
-import TypingAnimation from "@/components/ui/typing-animation";
 import { TextChanger } from "@/components/Textchanger";
 
 export default function LandingPage() {
