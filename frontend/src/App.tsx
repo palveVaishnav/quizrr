@@ -6,6 +6,7 @@ import TestPage from "./pages/TestPage";
 import { TestComponent } from "./pages/StartTest";
 import ResultPage from "./pages/SubmitPage";
 import SucessPage from "./pages/SucessPage";
+import NoPage from "./pages/Nopage";
 
 export default function App() {
   return (
@@ -17,7 +18,7 @@ export default function App() {
         <Route path="/startTest" element={<TestComponent id="cm1v3yniw0000jcau3lvlmvgr" />} />
         <Route path="/submitpage" element={<ResultPage />} />
         <Route path="/submitsucess" element={<SucessPage />} />
-        {/* <Route path="*" element={<NoPage />} /> */}
+        <Route path="*" element={<NoPage />} />
       </Routes>
     </BrowserRouter>
   );

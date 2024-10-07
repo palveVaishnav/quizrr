@@ -44,7 +44,10 @@ enum Qstatus {
     markedAnswered
 }
 
+import { useAuth0 } from '@auth0/auth0-react';
+
 export const ResultPage: React.FC = () => {
+    const { user } = useAuth0();
     const location = useLocation();
     const navigate = useNavigate();
     const { test } = location.state || {}; // Step 2: Extract `test` object from location state
@@ -54,6 +57,11 @@ export const ResultPage: React.FC = () => {
     if (!test) {
         return <p>No test data available</p>;
     }
+
+    if (!user) {
+        navigate('/dashboard');
+    }
+
     const handleSubmit = async () => {
         if (!test) {
             console.error("No test data to submit");
@@ -61,6 +69,7 @@ export const ResultPage: React.FC = () => {
         }
 
         setSubmitting(true); // Set submitting state to true
+
         try {
             const submitUrl = `http://127.0.0.1:8080/api/attempt/${test.id}`;
             console.log("Submitting updated test to:", submitUrl);
@@ -79,6 +88,7 @@ export const ResultPage: React.FC = () => {
                             options: JSON.stringify(question.options), // Re-stringify options before sending
                         })),
                     })),
+                    userId: user?.sub, // Include user ID in the request body if available
                 }),
             });
 

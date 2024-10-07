@@ -1,3 +1,5 @@
+import LoginButton from "@/components/auth/Login"
+import LogoutButton from "@/components/auth/Logout";
 import { Button } from "@/components/ui/button"
 import {
     Tooltip,
@@ -5,9 +7,16 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Link } from "react-router-dom"
+import { useAuth0 } from "@auth0/auth0-react";
+import { Link, useNavigate } from "react-router-dom"
 
 export default function LandingPage() {
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth0();
+    if (isAuthenticated) {
+        navigate('/dashboard');
+    }
+
     return (
         <div className="min-h-screen bg-gray-900 text-white">
             <header className="container mx-auto px-4 py-6 flex items-center justify-between">
@@ -44,9 +53,22 @@ export default function LandingPage() {
                         Contact Us
                     </a>
                 </nav>
-                <Button variant="secondary" className="hidden md:inline-flex">
-                    Login
-                </Button>
+                {isAuthenticated ?
+                    <>
+                        <Link to={'/dashboard'}>
+                            <Button variant="secondary" className="hidden md:inline-flex">
+                                Dashboard
+                            </Button>
+                        </Link>
+                        <Button variant="secondary" className="hidden md:inline-flex">
+                            <LogoutButton />
+                        </Button>
+                    </>
+                    :
+                    <Button variant="secondary" className="hidden md:inline-flex">
+                        <LoginButton />
+                    </Button>
+                }
             </header>
             <main className="container mx-auto px-4 py-20 md:py-32 flex flex-col items-start">
                 <h1 className="text-4xl md:text-6xl font-bold mb-4 max-w-2xl">
