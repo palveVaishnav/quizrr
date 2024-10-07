@@ -1,144 +1,93 @@
 "use client"
-
-import * as React from "react"
-
-import { cn } from "@/lib/utils"
+import LogoutButton from "@/components/auth/Logout";
+import { Button } from "@/components/ui/button"
 import {
-    NavigationMenu,
-    NavigationMenuContent,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    NavigationMenuTrigger,
-    navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
-import { Link } from "react-router-dom"
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { useNavigate } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useEffect, useState } from "react";
 
-const components: { title: string; href: string; description: string }[] = [
-    {
-        title: "Alert Dialog",
-        href: "/docs/primitives/alert-dialog",
-        description:
-            "A modal dialog that interrupts the user with important content and expects a response.",
-    },
-    {
-        title: "Hover Card",
-        href: "/docs/primitives/hover-card",
-        description:
-            "For sighted users to preview content available behind a link.",
-    },
-    {
-        title: "Progress",
-        href: "/docs/primitives/progress",
-        description:
-            "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
-    },
-    {
-        title: "Scroll-area",
-        href: "/docs/primitives/scroll-area",
-        description: "Visually or semantically separates content.",
-    },
-    {
-        title: "Tabs",
-        href: "/docs/primitives/tabs",
-        description:
-            "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-    },
-    {
-        title: "Tooltip",
-        href: "/docs/primitives/tooltip",
-        description:
-            "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-    },
-]
 
 export function NavigationBar() {
+    const { isAuthenticated, loginWithRedirect, logout } = useAuth0();
+    const navigate = useNavigate();
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        // Function to handle scroll
+        const handleScroll = () => {
+            const scrollTop = window.scrollY;
+            // Change background to white after scrolling 50px
+            setIsScrolled(scrollTop > 50);
+        };
+
+        // Attach scroll event listener
+        window.addEventListener("scroll", handleScroll);
+
+        // Cleanup on component unmount
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, []);
     return (
-        <NavigationMenu>
-            <NavigationMenuList>
-                <NavigationMenuItem>
-                    <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                        <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                            <li className="row-span-3">
-                                <NavigationMenuLink asChild>
-                                    <a
-                                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                                        href="/"
-                                    >
-                                        <div className="mb-2 mt-4 text-lg font-medium">
-                                            shadcn/ui
-                                        </div>
-                                        <p className="text-sm leading-tight text-muted-foreground">
-                                            Beautifully designed components that you can copy and
-                                            paste into your apps. Accessible. Customizable. Open
-                                            Source.
-                                        </p>
-                                    </a>
-                                </NavigationMenuLink>
-                            </li>
-                            <ListItem href="/docs" title="Introduction">
-                                Re-usable components built using Radix UI and Tailwind CSS.
-                            </ListItem>
-                            <ListItem href="/docs/installation" title="Installation">
-                                How to install dependencies and structure your app.
-                            </ListItem>
-                            <ListItem href="/docs/primitives/typography" title="Typography">
-                                Styles for headings, paragraphs, lists...etc
-                            </ListItem>
-                        </ul>
-                    </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                    <NavigationMenuTrigger>Components</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                            {components.map((component) => (
-                                <ListItem
-                                    key={component.title}
-                                    title={component.title}
-                                    href={component.href}
+        <header className={`container mx-auto flex items-center justify-between px-60 w-full mix-blend-difference ${isScrolled ? 'bg-white' : 'text-white'}`}>
+            <div className="flex items-center h-20 w-40">
+                <img src="./logo.png" className="mix-blend-difference" />
+            </div>
+            <nav className="hidden md:flex space-x-6 font-semibold">
+                <a href="/" className="">
+                    Home
+                </a>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <a href="#" className="">
+                                Test Series
+                            </a>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-white text-black grid gap-4">
+                            {Array.from({ length: 6 }, (_, idx) => (
+                                <Button variant={'ghost'}
+                                    key={idx}
+                                    className="w-40"
+                                    onClick={() => {
+                                        if (!isAuthenticated) {
+                                            loginWithRedirect()
+                                        } else {
+                                            navigate('/dashboard')
+                                        }
+                                    }}
                                 >
-                                    {component.description}
-                                </ListItem>
+                                    Jee Mock Test 1
+                                </Button>
                             ))}
-                        </ul>
-                    </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                    <Link to="/">
-                        <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                            Documentation
-                        </NavigationMenuLink>
-                    </Link>
-                </NavigationMenuItem>
-            </NavigationMenuList>
-        </NavigationMenu>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+                <a href="#" className="">
+                    For Institutes
+                </a>
+                <a href="#" className="">
+                    Contact Us
+                </a>
+            </nav>
+            {isAuthenticated ?
+                <Button className="hidden md:inline-flex bg-blue-600 hover:bg-blue-700 p-6 text-white"
+                    onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+                >
+                    <LogoutButton />
+                </Button>
+                :
+                <Button className="hidden md:inline-flex bg-blue-600 hover:bg-blue-700 p-6 text-white"
+                    onClick={() => loginWithRedirect()}
+                >
+                    Login
+                </Button>
+            }
+        </header>
     )
 }
-
-const ListItem = React.forwardRef<
-    React.ElementRef<"a">,
-    React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
-    return (
-        <li>
-            <NavigationMenuLink asChild>
-                <a
-                    ref={ref}
-                    className={cn(
-                        "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                        className
-                    )}
-                    {...props}
-                >
-                    <div className="text-sm font-medium leading-none">{title}</div>
-                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        {children}
-                    </p>
-                </a>
-            </NavigationMenuLink>
-        </li>
-    )
-})
-ListItem.displayName = "ListItem"

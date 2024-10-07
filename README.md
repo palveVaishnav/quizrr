@@ -56,6 +56,11 @@ go run github.com/steebchen/prisma-client-go migrate dev --whatever
 go run github.com/steebchen/prisma-client-go db push
 ```
 
+#### 10. Seeding the Database
+```bash
+go run seed.go
+```
+
 #### 6. Running the Backend
 
 ```bash
@@ -87,7 +92,6 @@ The following endpoints are available in the backend:
 - `../api/test/:id`: Returns a specific test by ID.
 - `../api/submit/:id`: Submit answers for a test .
 
-#### 10. Seeding the Database
-```bash
-go run seed.go
-```
+
+
+#### TODO :
