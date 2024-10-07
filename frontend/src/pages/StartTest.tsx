@@ -81,6 +81,8 @@ export const TestComponent = ({ id }: { id: string }) => {
                 console.log("Fetching data from:", backendUrl);
 
                 const response = await fetch(backendUrl);
+                console.log("Raw response:", response);
+
                 if (!response.ok) {
                     throw new Error(`Error: ${response.statusText}`);
                 }
