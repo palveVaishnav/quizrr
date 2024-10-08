@@ -53,11 +53,11 @@ export default function TestOverview() {
 
     // Show test details
     return (
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 ">
             <div className="flex flex-col text-left">
                 <h1 className="text-lg font-semibold md:text-xl">Test Overview</h1>
                 {test && (
-                    <Card className="w-full border-red-200">
+                    <Card className="w-full border-red-200 bg-inherit">
                         <CardHeader>
                             <CardTitle className="text-2xl font-bold flex items-center gap-2">
                                 {test.name}
@@ -111,7 +111,7 @@ export default function TestOverview() {
 
 export function Instructions() {
     return (
-        <Card className="w-full mx-auto p-4">
+        <Card className="w-full mx-auto p-4 bg-inherit">
             <CardHeader>
                 <CardTitle>Important Instructions</CardTitle>
             </CardHeader>

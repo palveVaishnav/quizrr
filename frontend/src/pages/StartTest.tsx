@@ -281,7 +281,7 @@ export const TestComponent = ({ id }: { id: string }) => {
                             </div>
                         </div>
 
-                        {/* Right panel for navigation */}
+                        {/* Right panel */}
                         <div className="max-w-80 bg-gray-00 overflow-auto border">
                             <div className="mt-4 space-y-2 grid grid-cols-2 text-sm border-b border-black p-2">
                                 <div className="flex items-center space-x-2">
@@ -337,8 +337,8 @@ export const TestComponent = ({ id }: { id: string }) => {
                                                 key={i}
                                                 className={`w-10 h-10 border rounded-md     
                                                     ${question.status === Qstatus.notVisited ? 'border border-blue-500 rounded-md' : ''}
-                                                    ${question.status === Qstatus.answered ? ' bg-green-500' : ''}
-                                                    ${question.status === Qstatus.notAnswered ? ' bg-red-500' : ''}
+                                                    ${question.status === Qstatus.answered ? ' bg-green-500 polygonUp  overflow-hidden' : 'overflow-hidden'}
+                                                    ${question.status === Qstatus.notAnswered ? ' bg-red-500 polygonDown' : ''}
                                                     ${question.status === Qstatus.marked ? 'bg-purple-500 rounded-full' : ''}
                                                     ${question.status === Qstatus.markedAnswered ? 'bg-purple-500 text-white border-green-500' : ''}
                                                     `}

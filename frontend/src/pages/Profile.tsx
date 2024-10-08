@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MoonIcon, SunIcon } from "@radix-ui/react-icons"
 import { Dashboard } from "@/components/Dashboard";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom"
@@ -20,32 +19,28 @@ export default function ProfilePage() {
 
 function Profile() {
     const navigate = useNavigate();
-    const { logout, user } = useAuth0();
+    const { user } = useAuth0();
     if (!user) {
         navigate('/')
     }
+    console.log(user)
     return (
-        <div className="container mx-auto p-4">
+        <div className="container mx-auto p-4 bg-inherit">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Account</h1>
                 <div className="flex items-center space-x-4">
-                    <Button variant="outline" size="icon">
-                        {/* <SunIcon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                        <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                        <span className="sr-only">Toggle theme</span> */}
-                    </Button>
                     <Button variant="destructive"
-                    // onClick={() => }
+                    // onClick={() => } // willl add after state management 
                     >Logout</Button>
                 </div>
             </div>
-            <Tabs defaultValue="profile" className="w-full">
+            <Tabs defaultValue="profile" className="w-full ">
                 <TabsList>
                     <TabsTrigger value="profile">Profile</TabsTrigger>
                     <TabsTrigger value="settings">Settings</TabsTrigger>
                 </TabsList>
                 <TabsContent value="profile">
-                    <Card>
+                    <Card className="">
                         <CardHeader>
                             <CardTitle>Profile</CardTitle>
                             <CardDescription>Manage your personal information and account details.</CardDescription>

@@ -20,34 +20,25 @@ function Results() {
 
 const AttemptsPage: React.FC = () => {
     const [attemptsData, setAttemptsData] = useState([]);
-    const [error, setError] = useState(null);
-
     useEffect(() => {
-        const id = 'google-oauth2|103138456760974844166';
-        const url = `http://127.0.0.1:8080/api/attempts/${id}`;
-
-        const fetchData = async () => {
+        const fetchAttempts = async () => {
             try {
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
+                const id = 'google-oauth2|103138456760974844166';
+                const response = await fetch(`http://127.0.0.1:8080/api/attempts/${id}`);
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    console.log('fetching error ')
+                    throw new Error;
                 }
 
-                const result = await response.json();
-                console.log(result, response)
-                setAttemptsData(result);
-            } catch (err) {
-                setError(err.message);
+                const data = await response.json();
+                console.log(data);
+                setAttemptsData(data);
+            } catch (error) {
+                console.error("Error fetching attempts:", error);
             }
         };
-
-        fetchData();
+        fetchAttempts();
     }, []);
 
     console.log(attemptsData)

@@ -20,7 +20,7 @@ export function Dashboard({
     children: JSX.Element
 }) {
     return (
-        <div className="h-screen grid w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+        <div className="h-screen grid w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] dev">
             <RightPanel />
             <div className="flex flex-col h-screen  overflow-y-scroll">
                 {children}
@@ -33,7 +33,7 @@ export function Dashboard({
 
 const RightPanel = () => {
     return (
-        <div className={`hidden border-r bg-muted/40 md:block h-screen`}>
+        <div className={`hidden border-r md:block h-screen`}>
             <div className="flex h-full max-h-screen flex-col gap-2 ">
                 <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
                     <Link to="/" className="flex items-center gap-2 font-semibold">
@@ -56,14 +56,14 @@ const RightPanel = () => {
                         </Link>
                         <Link
                             to="/packs"
-                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:text-primary"
+                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                         >
                             <Book className="h-4 w-4" />
                             Packs
                         </Link>
                         <Link
                             to="/tests"
-                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:text-primary"
+                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                         >
                             <Book className="h-4 w-4" />
                             Tests

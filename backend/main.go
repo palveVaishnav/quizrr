@@ -59,7 +59,8 @@ func run() error {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173", 
+		AllowOrigins: "*", // You can specify your front-end origin instead of "*"
+    	AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 
 	// Define a route to get all tests
