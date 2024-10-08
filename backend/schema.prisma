@@ -42,10 +42,12 @@ model Test {
 model User {
     id      String    @id @default(cuid())
     attempt Attempt[]
+    authId  String    @unique
 }
 
 model Attempt {
     id     String  @id @default(cuid())
+    authId String?
     testId String
     marks  Int
     User   User?   @relation(fields: [userId], references: [id])

@@ -3,6 +3,16 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Download, CheckCircle2 } from "lucide-react"
 import { Dashboard } from "@/components/Dashboard"
 import { Separator } from "@/components/ui/separator"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Link } from "react-router-dom"
+
+
 
 interface TestSeriesProps {
     batch: string
@@ -14,11 +24,8 @@ interface TestSeriesProps {
     isAdvanced?: boolean
 }
 
-const TestSeriesCard = ({ batch, title, subtitle, fullTests, partTests, chapterTests, isAdvanced }: TestSeriesProps) => (
+const TestSeriesCard = ({ batch, subtitle, fullTests, partTests, chapterTests, isAdvanced }: TestSeriesProps) => (
     <Card className="w-full max-w-sm relative border border-black p-2">
-        <p className="">
-            {title}
-        </p>
         <CardHeader className="space-y-1 pb-4">
             <div className="bg-red-500 text-white text-sm font-semibold px-2 py-1 rounded-md w-fit absolute -top-3 right-5">
                 {batch} Batch
@@ -49,8 +56,42 @@ const TestSeriesCard = ({ batch, title, subtitle, fullTests, partTests, chapterT
             </div>
         </CardContent>
         <CardFooter className="flex justify-between">
-            <Button variant="outline">View Packs</Button>
-            <Button>Buy Now</Button>
+            <Dialog>
+                <DialogTrigger>View Pack</DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Select a pack :</DialogTitle>
+                        <Separator />
+                        <div className="space-y-4">
+                            <Link to={'/tests'}>
+                                <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                                    <div className="flex items-center space-x-2">
+                                        <img src="https://cdn.quizrr.in/web-assets/icons/exams/jee-main.png" className="w-8" />
+                                        <span>JEE Main 2025 Full Test Series (October Batch)</span>
+                                    </div>
+                                    <Button variant="secondary" className="text-sm">
+                                        View Tests
+                                    </Button>
+                                </div>
+                            </Link>
+                            <Link to={'/tests'}>
+                                <div className="flex items-center justify-between p-4">
+                                    <div className="flex items-center space-x-2">
+                                        <img src="https://cdn.quizrr.in/web-assets/icons/exams/jee-main.png" className="w-8" />
+                                        <span>JEE Main 2025 Chapter-wise Test Series</span>
+                                    </div>
+                                    <Button variant="secondary" className="text-sm">
+                                        View Tests
+                                    </Button>
+                                </div>
+                            </Link>
+                        </div>
+                    </DialogHeader>
+                </DialogContent>
+            </Dialog>
+            <Link to={'/payment'}>
+                <Button>Buy Now</Button>
+            </Link>
         </CardFooter>
     </Card>
 )

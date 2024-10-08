@@ -48,7 +48,6 @@ func main() {
 }
 
 func run() error {
-	// Initialize Prisma client
 	client := db.NewClient()
 	if err := client.Prisma.Connect(); err != nil {
 		return err
@@ -57,11 +56,10 @@ func run() error {
 
 	ctx := context.Background()
 
-	// Initialize a new Fiber app
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173", // Replace with your frontend URL
+		AllowOrigins: "http://localhost:5173", 
 	}))
 
 	// Define a route to get all tests
@@ -92,6 +90,69 @@ func run() error {
 		return c.JSON(test)
 	})
 
+	// app.Get("/api/attempts/:id", func(c *fiber.Ctx) error {
+	// 	// id here is auth0 id of the user 
+	// 	id := c.Params("id")
+	// 	attempts, err := client.Attempt.FindMany(
+	// 		db.Attempt.AuthID.Equals(id),
+	// 	).Exec(ctx)
+	// 	if err != nil {
+	// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch attempts"})
+	// 	}
+	// 	return c.JSON(attempts)
+	// })
+
+	app.Get("/api/attempts/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id") 
+
+		attempts, err := client.Attempt.FindMany(
+			db.Attempt.AuthID.Equals(id),
+		).Exec(ctx)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch attempts"})
+		}
+
+		// If no attempts are found, return an empty array
+		if len(attempts) == 0 {
+			return c.JSON([]fiber.Map{})
+		}
+
+		// Store the test IDs from the attempts
+		var testIds []string
+		for _, attempt := range attempts {
+			testIds = append(testIds, attempt.TestID)
+		}
+
+		// Fetch the test details for the collected test IDs
+		tests, err := client.Test.FindMany(
+			db.Test.ID.In(testIds),
+		).Exec(ctx)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch tests"})
+		}
+
+		// Create a response combining attempts with corresponding test details
+		response := []fiber.Map{}
+		for _, attempt := range attempts {
+			// Find the corresponding test details for the current attempt
+			var testDetails *db.TestModel
+			for _, test := range tests {
+				if test.ID == attempt.TestID {
+					testDetails = &test
+					break
+				}
+			}
+
+			response = append(response, fiber.Map{
+				"attempt": attempt,
+				"test":    testDetails,
+			})
+		}
+
+		return c.JSON(response)
+})
+
+
 	// Define a route to submit an attempt
 	app.Post("/api/attempt/:id", func(c *fiber.Ctx) error {
 		// Get the test ID from URL params
@@ -121,17 +182,21 @@ func run() error {
 		if err := json.Unmarshal(dbTestJSON, &dbTest); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse database data"})
 		}
+		fmt.Println(receivedData.UserId)
 		// Check if user exists in the database
 		user, err := client.User.FindUnique(
-			db.User.ID.Equals(receivedData.UserId),
+			db.User.AuthID.Equals(receivedData.UserId),
 		).Exec(ctx)
+		if err != nil{
+			fmt.Println("User Not found")
+		}
 
 		// If the user is not found, create a new user record
 		if user == nil {
 			fmt.Println("User not found, creating a new user...")
 
 			_, err := client.User.CreateOne(
-				db.User.ID.Set(receivedData.UserId), // Assuming UserID is unique
+				db.User.AuthID.Set(receivedData.UserId),
 			).Exec(ctx)
 			if err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create new user"})
@@ -158,9 +223,9 @@ func run() error {
 
 		// Create a new attempt record in the database
 		_, err = client.Attempt.CreateOne(
-			db.Attempt.TestID.Set(id),            // Use TestID directly
-			db.Attempt.Marks.Set(matchingCount),  // Use matching count
-			db.Attempt.UserID.Set(receivedData.UserId), // Set the UserId field if applicable
+			db.Attempt.TestID.Set(id),
+			db.Attempt.Marks.Set(matchingCount),
+			db.Attempt.AuthID.Set(receivedData.UserId),
 		).Exec(ctx)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to save attempt"})

@@ -11,6 +11,7 @@ import PacksPage from "./pages/Packs";
 import TestsPage from "./pages/Tests";
 import ProfilePage from "./pages/Profile";
 import NotebookPage from "./pages/NotebookPage";
+import ResultBoard from "./pages/Results";
 
 export default function App() {
   return (
@@ -25,9 +26,10 @@ export default function App() {
 
         {/* Should be nested in the tests  */}
         <Route path="/test" element={<TestPage />} />
-        <Route path="/startTest" element={<TestComponent id="cm1v3yniw0000jcau3lvlmvgr" />} />
+        <Route path="/startTest" element={<TestComponent id="cm20c3ptv0000lfozu1wnrjp1" />} />
         <Route path="/submitpage" element={<ResultPage />} />
         <Route path="/submitsucess" element={<SucessPage />} />
+        <Route path="/results" element={<ResultBoard />} />
 
 
         <Route path="/profile" element={<ProfilePage />} />

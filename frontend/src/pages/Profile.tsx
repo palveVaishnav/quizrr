@@ -19,11 +19,11 @@ export default function ProfilePage() {
 
 
 function Profile() {
-    // const navigate = useNavigate();
-    // const { logout, user } = useAuth0();
-    // if (!user) {
-    //     navigate('/')
-    // }
+    const navigate = useNavigate();
+    const { logout, user } = useAuth0();
+    if (!user) {
+        navigate('/')
+    }
     return (
         <div className="container mx-auto p-4">
             <div className="flex justify-between items-center mb-6">
@@ -53,17 +53,18 @@ function Profile() {
                         <CardContent className="space-y-4">
                             <div className="flex items-center space-x-4">
                                 <Avatar className="h-20 w-20">
-                                    <AvatarImage src="/placeholder.svg?height=80&width=80" alt="Vaishnav" />
+                                    <AvatarImage src="/placeholder.svg?height=80&width=80" alt="user image" />
                                     <AvatarFallback>V</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <h2 className="text-2xl font-bold">Vaishnav</h2>
-                                    <p className="text-sm text-gray-500">quizrr01@gmail.com</p>
-                                    <p className="text-sm text-gray-500">0123456789</p>
-                                    <p className="text-sm text-gray-500">Maharashtra, India, 123456.</p>
+                                    <h2 className="text-2xl font-bold">{user?.name}</h2>
+                                    <p className="text-sm text-gray-500">{user?.email}</p>
+                                    <p className="text-sm text-gray-500">{user?.phone_number}</p>
+                                    <p className="text-sm text-gray-500">{user?.address}</p>
                                 </div>
                             </div>
                             <div className="space-y-2">
+                                {/* While on boarding */}
                                 <Label>Education</Label>
                                 <p>Indian School Certificate (ISC)</p>
                                 <p>Second Time Dropper</p>

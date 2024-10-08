@@ -4,7 +4,6 @@ import {
     Bell,
     Book,
     Bookmark,
-    CircleUser,
     Home,
     Package2,
     User,
@@ -12,16 +11,6 @@ import {
 
 // import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import LogoutButton from "./auth/Logout"
-
 export const description =
     "A products dashboard with a sidebar navigation and a main content area. The dashboard has a header with a search input and a user menu. The sidebar has a logo, navigation links, and a card with a call to action. The main content area shows an empty state with a call to action."
 
@@ -55,23 +44,6 @@ const RightPanel = () => {
                         <Bell className="h-4 w-4" />
                         <span className="sr-only">Toggle notifications</span>
                     </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="secondary" size="icon" className="border border-black">
-                                <span className="">Account</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Profile</DropdownMenuLabel>
-                            <DropdownMenuItem>Settings</DropdownMenuItem>
-                            <DropdownMenuItem>Support</DropdownMenuItem>
-                            <DropdownMenuItem>Contact Us</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                                <LogoutButton />
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
                 </div>
                 <div className="flex-1">
                     <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
@@ -104,11 +76,11 @@ const RightPanel = () => {
                             Notebooks
                         </Link>
                         <Link
-                            to="#"
+                            to="/results"
                             className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                         >
                             <AlertTriangle className="h-4 w-4" />
-                            Mistakes
+                            Results
                         </Link>
                         <Link
                             to="/profile"
