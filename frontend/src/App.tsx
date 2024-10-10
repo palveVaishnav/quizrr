@@ -12,6 +12,7 @@ import TestsPage from "./pages/Tests";
 import ProfilePage from "./pages/Profile";
 import NotebookPage from "./pages/NotebookPage";
 import ResultBoard from "./pages/Results";
+import RankingPage from "./pages/Rankings";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/submitpage" element={<ResultPage />} />
         <Route path="/submitsucess" element={<SucessPage />} />
         <Route path="/results" element={<ResultBoard />} />
+        <Route path="/rankings" element={<RankingPage />} />
 
 
         <Route path="/profile" element={<ProfilePage />} />

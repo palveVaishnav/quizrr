@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 
 	"backend/db"
 	"backend/seed"
@@ -81,10 +82,27 @@ func setupMiddleware(app *fiber.App) {
 
 // setupRoutes registers the API routes
 func setupRoutes(app *fiber.App) {
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
 	app.Get("/api/tests", getTests)
 	app.Get("/api/test/:id", getTestByID)
-	app.Get("/api/attempts/:id", getAttempts)
+	app.Get("/api/attempts", getAllAttempts) // New endpoint
+	app.Get("/api/attempts/:id", getAttemptsByUser)
 	app.Post("/api/attempt/:id", createAttempt)
+}
+
+func getAllAttempts(c *fiber.Ctx) error {
+	attempts, err := client.Attempt.FindMany().Exec(ctx) // Fetch attempts without user data
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch attempts"})
+	}
+	sort.Slice(attempts, func(i, j int) bool {
+		return attempts[i].Marks > attempts[j].Marks
+	})
+
+	return c.JSON(attempts)
 }
 
 // getTests handles fetching all tests
@@ -115,7 +133,7 @@ func getTestByID(c *fiber.Ctx) error {
 }
 
 // getAttempts handles fetching attempts by user ID
-func getAttempts(c *fiber.Ctx) error {
+func getAttemptsByUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 
 	attempts, err := client.Attempt.FindMany(
