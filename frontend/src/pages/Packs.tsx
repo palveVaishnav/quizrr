@@ -25,8 +25,8 @@ interface TestSeriesProps {
 }
 
 const TestSeriesCard = ({ batch, subtitle, fullTests, partTests, chapterTests, isAdvanced }: TestSeriesProps) => (
-    <Card className="w-full max-w-sm relative border border-black p-2 bg-inherit">
-        <CardHeader className="space-y-1 pb-4 dev">
+    <Card className="w-full max-w-sm relative border border-black p-2 bgreplace">
+        <CardHeader className="space-y-1 pb-4">
             <div className="bg-red-500 text-white text-sm font-semibold px-2 py-1 rounded-md w-fit absolute -top-3 right-5">
                 {batch} Batch
             </div>
@@ -36,7 +36,7 @@ const TestSeriesCard = ({ batch, subtitle, fullTests, partTests, chapterTests, i
             <p className="text-sm text-muted-foreground">{subtitle}</p>
         </CardHeader>
         <CardContent className="space-y-2">
-            <Button variant="outline" className="w-full justify-start bg-inherit">
+            <Button variant="outline" className="w-full justify-start bgreplace">
                 <Download className="mr-2 h-4 w-4" />
                 Download Schedule
             </Button>
@@ -55,11 +55,11 @@ const TestSeriesCard = ({ batch, subtitle, fullTests, partTests, chapterTests, i
                 </div>
             </div>
         </CardContent>
-        <CardFooter className="flex justify-between dev">
+        <CardFooter className="flex justify-between ">
             <Dialog>
                 <DialogTrigger>View Pack</DialogTrigger>
                 <DialogContent>
-                    <DialogHeader className="bg-inherit">
+                    <DialogHeader className="bgreplace">
                         <DialogTitle>Select a pack :</DialogTitle>
                         <Separator />
                         <div className="space-y-4">
@@ -113,7 +113,7 @@ export function Packs() {
                 Test Series Packs
             </span>
             <Separator />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 dev">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
                 {testSeries.map((series, index) => (
                     <TestSeriesCard key={index} {...series} />
                 ))}

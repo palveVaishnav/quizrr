@@ -20,7 +20,7 @@ export function Dashboard({
     children: JSX.Element
 }) {
     return (
-        <div className="h-screen grid w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] dev">
+        <div className="h-screen grid w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
             <RightPanel />
             <div className="flex flex-col h-screen  overflow-y-scroll">
                 {children}
@@ -81,6 +81,13 @@ const RightPanel = () => {
                         >
                             <AlertTriangle className="h-4 w-4" />
                             Results
+                        </Link>
+                        <Link
+                            to="/rankings"
+                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                        >
+                            <AlertTriangle className="h-4 w-4" />
+                            Rankings
                         </Link>
                         <Link
                             to="/profile"

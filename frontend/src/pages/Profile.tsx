@@ -25,7 +25,7 @@ function Profile() {
     }
     console.log(user)
     return (
-        <div className="container mx-auto p-4 bg-inherit">
+        <div className="container mx-auto p-4 bgreplace">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Account</h1>
                 <div className="flex items-center space-x-4">
@@ -52,8 +52,8 @@ function Profile() {
                                     <AvatarFallback>V</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <h2 className="text-2xl font-bold">{user?.name}</h2>
-                                    <p className="text-sm text-gray-500">{user?.email}</p>
+                                    <h2 className="text-2xl font-bold">{user?.name || "John deo"}</h2>
+                                    <p className="text-sm text-gray-500">{user?.email || "email@gmail.com"}</p>
                                     <p className="text-sm text-gray-500">{user?.phone_number}</p>
                                     <p className="text-sm text-gray-500">{user?.address}</p>
                                 </div>
